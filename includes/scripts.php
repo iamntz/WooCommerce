@@ -59,7 +59,6 @@ function twispay_tw_add_admin_js() {
 
     // Load all admin js files for Administrator Pages
     wp_enqueue_script( 'ma-admin', plugins_url( '../assets/js/admin.js', __FILE__ ) );
-    //wp_enqueue_script( 'ma-admin-jquery', plugins_url( '../assets/js/jquery-ui.min.js', __FILE__ ) );
 }
 add_action( 'admin_enqueue_scripts', 'twispay_tw_add_admin_js' );
 
