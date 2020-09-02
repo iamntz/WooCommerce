@@ -36,7 +36,7 @@
 
 <div class="loader"></div>
 
-<!--    <script>window.history.replaceState('twispay', 'Twispay', '../twispay.php');</script>-->
+<script>window.history.replaceState('twispay', 'Twispay', '../twispay.php');</script>
 
 
 <?php
@@ -133,8 +133,10 @@ $backUrl .= (false == strpos($backUrl, '?')) ? ('?secure_key=' . $data['cart_has
 $orderData = [
     'siteId' => $siteID,
     'customer' => $customer,
-    'order' => ['orderId' => $_GET['order_id'] . '_' . $timestamp,
+    'order' => [
+        'orderId' => $_GET['order_id'] . '_' . $timestamp,
         'type' => 'purchase',
+        'orderType' => 'purchase',
         'amount' => $data['total'],
         'currency' => $data['currency'],
 //        'items' => $items,
