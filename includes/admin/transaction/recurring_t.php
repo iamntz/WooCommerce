@@ -11,12 +11,12 @@
  */
 
 // Load languages
-$lang = explode( '-', get_bloginfo( 'language' ) );
+$lang = explode('-', get_bloginfo('language'));
 $lang = $lang[0];
-if ( file_exists( TWISPAY_PLUGIN_DIR . 'lang/' . $lang . '/lang.php' ) ) {
-    require( TWISPAY_PLUGIN_DIR . 'lang/' . $lang . '/lang.php' );
+if (file_exists(TWISPAY_PLUGIN_DIR . 'lang/' . $lang . '/lang.php')) {
+    require(TWISPAY_PLUGIN_DIR . 'lang/' . $lang . '/lang.php');
 } else {
-    require( TWISPAY_PLUGIN_DIR . 'lang/en/lang.php' );
+    require(TWISPAY_PLUGIN_DIR . 'lang/en/lang.php');
 }
 
 ?>
@@ -26,16 +26,16 @@ if ( file_exists( TWISPAY_PLUGIN_DIR . 'lang/' . $lang . '/lang.php' ) ) {
 
     <!-- Get all payment order ID from the $_GET parameters -->
     <?php
-        if ( isset( $_GET['order_ad'] ) && $_GET['order_ad'] ) {
-            foreach ( explode( ',', $_GET['order_ad'] ) as $key => $a_id ) {
-                print_r( 'ID: #' . $a_id );
-                print_r( '<br>' );
-            }
+    if (isset($_GET['order_ad']) && $_GET['order_ad']) {
+        foreach (explode(',', $_GET['order_ad']) as $key => $a_id) {
+            print_r('ID: #' . $a_id);
+            print_r('<br>');
         }
+    }
     ?>
 
     <form method="post" id="recurring_order">
-        <input type="hidden" name="tw_general_action" value="recurring_order" />
-        <?php submit_button( $tw_lang['transaction_list_confirm_title'], 'primary', 'createuser', true, array( 'id' => 'confirmdeletion' ) ); ?>
+        <input type="hidden" name="tw_general_action" value="recurring_order"/>
+        <?php submit_button($tw_lang['transaction_list_confirm_title'], 'primary', 'createuser', true, ['id' => 'confirmdeletion']); ?>
     </form>
 </div>

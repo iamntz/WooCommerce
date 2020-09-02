@@ -11,112 +11,116 @@
  */
 
 /* Exit if the file is accessed directly. */
-if ( !defined('ABSPATH') ) { exit; }
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 /* Require the "Twispay_TW_Logger" class. */
-require_once( TWISPAY_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'Twispay_TW_Logger.php' );
+require_once(TWISPAY_PLUGIN_DIR . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'Twispay_TW_Logger.php');
 
 /* Security class check */
-if ( !class_exists( 'Twispay_TW_Helper_Response' ) ) :
+if (!class_exists('Twispay_TW_Helper_Response')) :
     /**
      * Twispay Helper Class
      *
      * Class that implements methods to decrypt
      * Twispay server responses.
      */
-    class Twispay_TW_Helper_Response{
+    class Twispay_TW_Helper_Response
+    {
         /**
          * Decrypt the response from Twispay server.
          *
          * @param string $tw_encryptedMessage - The encripted server message.
          * @param string $tw_secretKey        - The secret key (from Twispay).
-         * @param array $tw_lang              - The language that the store uses
+         * @param array  $tw_lang             - The language that the store uses
          *
          * @return Array([key => value,]) - If everything is ok array containing the decrypted data.
          *         bool(FALSE)            - If decription fails.
          */
-        public static function twispay_tw_decrypt_message($tw_encryptedMessage, $tw_secretKey, $tw_lang){
-            $encrypted = ( string )$tw_encryptedMessage;
+        public static function twispay_tw_decrypt_message($tw_encryptedMessage, $tw_secretKey, $tw_lang)
+        {
+            $encrypted = ( string ) $tw_encryptedMessage;
 
-            if ( !strlen($encrypted) || (FALSE == strpos($encrypted, ',')) ){
-                return FALSE;
+            if (!strlen($encrypted) || (false == strpos($encrypted, ','))) {
+                return false;
             }
 
             /* Get the IV and the encrypted data */
-            $encryptedParts = explode(/*delimiter*/',', $encrypted, /*limit*/2);
+            $encryptedParts = explode(/*delimiter*/ ',', $encrypted, /*limit*/ 2);
             $iv = base64_decode($encryptedParts[0]);
-            if ( FALSE === $iv ){
-                return FALSE;
+            if (false === $iv) {
+                return false;
             }
 
             $encryptedData = base64_decode($encryptedParts[1]);
-            if ( FALSE === $encryptedData ){
-                return FALSE;
+            if (false === $encryptedData) {
+                return false;
             }
 
             /* Decrypt the encrypted data */
-            $decryptedResponse = openssl_decrypt($encryptedData, /*method*/'aes-256-cbc', $tw_secretKey, /*options*/OPENSSL_RAW_DATA, $iv);
-            if ( FALSE === $decryptedResponse ){
-                return FALSE;
+            $decryptedResponse = openssl_decrypt($encryptedData, /*method*/ 'aes-256-cbc', $tw_secretKey, /*options*/ OPENSSL_RAW_DATA, $iv);
+            if (false === $decryptedResponse) {
+                return false;
             }
 
             /** JSON decode the decrypted data. */
-            $decodedResponse = json_decode($decryptedResponse, /*assoc*/TRUE, /*depth*/4);
+            $decodedResponse = json_decode($decryptedResponse, /*assoc*/ true, /*depth*/ 4);
 
             /** Check if the decryption was successful. */
-              if (NULL === $decodedResponse) {
+            if (null === $decodedResponse) {
                 /** Log the last error occurred during the last JSON encoding/decoding. */
                 switch (json_last_error()) {
                     case JSON_ERROR_DEPTH:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_DEPTH']);
-                    break;
+                        break;
 
                     case JSON_ERROR_STATE_MISMATCH:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_STATE_MISMATCH']);
-                    break;
+                        break;
 
                     case JSON_ERROR_CTRL_CHAR:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_CTRL_CHAR']);
-                    break;
+                        break;
 
                     case JSON_ERROR_SYNTAX:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_SYNTAX']);
-                    break;
+                        break;
 
                     case JSON_ERROR_UTF8:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_UTF8']);
-                    break;
+                        break;
 
                     case JSON_ERROR_RECURSION:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_RECURSION']);
-                    break;
+                        break;
 
                     case JSON_ERROR_INF_OR_NAN:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_INF_OR_NAN']);
-                    break;
+                        break;
 
                     case JSON_ERROR_UNSUPPORTED_TYPE:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_UNSUPPORTED_TYPE']);
-                    break;
+                        break;
 
                     case JSON_ERROR_INVALID_PROPERTY_NAME:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_INVALID_PROPERTY_NAME']);
-                    break;
+                        break;
 
                     case JSON_ERROR_UTF16:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_UTF16']);
-                    break;
+                        break;
 
                     default:
                         Twispay_TW_Logger::twispay_tw_log($tw_lang['JSON_ERROR_UNKNOWN']);
-                    break;
+                        break;
                 }
 
-                return FALSE;
+                return false;
             }
 
             /** Check if externalOrderId uses '_' separator */
-            if (FALSE !== strpos($decodedResponse['externalOrderId'], '_')) {
+            if (false !== strpos($decodedResponse['externalOrderId'], '_')) {
                 $explodedVal = explode('_', $decodedResponse['externalOrderId'])[0];
 
                 /** Check if externalOrderId contains only digits and is not empty. */
@@ -138,57 +142,58 @@ if ( !class_exists( 'Twispay_TW_Helper_Response' ) ) :
          * @return bool(FALSE)     - If any error occurs
          *         bool(TRUE)      - If the validation is successful
          */
-        public static function twispay_tw_checkValidation($tw_response, $tw_lang) {
-            $tw_errors = array();
+        public static function twispay_tw_checkValidation($tw_response, $tw_lang)
+        {
+            $tw_errors = [];
 
-            if ( !$tw_response ) {
-                return FALSE;
+            if (!$tw_response) {
+                return false;
             }
 
-            if ( empty( $tw_response['status'] ) && empty( $tw_response['transactionStatus'] ) ) {
-               $tw_errors[] = $tw_lang['log_error_empty_status'];
+            if (empty($tw_response['status']) && empty($tw_response['transactionStatus'])) {
+                $tw_errors[] = $tw_lang['log_error_empty_status'];
             }
 
-            if ( empty( $tw_response['identifier'] ) ) {
+            if (empty($tw_response['identifier'])) {
                 $tw_errors[] = $tw_lang['log_error_empty_identifier'];
             }
 
-            if ( empty( $tw_response['externalOrderId'] ) ) {
+            if (empty($tw_response['externalOrderId'])) {
                 $tw_errors[] = $tw_lang['log_error_empty_external'];
             }
 
-            if ( empty( $tw_response['transactionId'] ) ) {
+            if (empty($tw_response['transactionId'])) {
                 $tw_errors[] = $tw_lang['log_error_empty_transaction'];
             }
 
-            if ( sizeof( $tw_errors ) ) {
-                foreach ( $tw_errors as $err ) {
-                    Twispay_TW_Logger::twispay_tw_log( $err );
+            if (sizeof($tw_errors)) {
+                foreach ($tw_errors as $err) {
+                    Twispay_TW_Logger::twispay_tw_log($err);
                 }
 
-                return FALSE;
+                return false;
             } else {
-                $data = [ 'id_cart'          => explode('_', $tw_response['externalOrderId'])[0]
-                        , 'status'           => (empty($tw_response['status'])) ? ($tw_response['transactionStatus']) : ($tw_response['status'])
-                        , 'identifier'       => $tw_response['identifier']
-                        , 'orderId'          => (int)$tw_response['orderId']
-                        , 'transactionId'    => (int)$tw_response['transactionId']
-                        , 'customerId'       => (int)$tw_response['customerId']
-                        , 'cardId'           => (!empty($tw_response['cardId'])) ? (( int )$tw_response['cardId']) : (0)];
+                $data = ['id_cart' => explode('_', $tw_response['externalOrderId'])[0]
+                    , 'status' => (empty($tw_response['status'])) ? ($tw_response['transactionStatus']) : ($tw_response['status'])
+                    , 'identifier' => $tw_response['identifier']
+                    , 'orderId' => (int) $tw_response['orderId']
+                    , 'transactionId' => (int) $tw_response['transactionId']
+                    , 'customerId' => (int) $tw_response['customerId']
+                    , 'cardId' => (!empty($tw_response['cardId'])) ? (( int ) $tw_response['cardId']) : (0)];
 
                 Twispay_TW_Logger::twispay_tw_log($tw_lang['log_ok_response_data'] . json_encode($data));
 
-                if ( !in_array($data['status'], Twispay_TW_Status_Updater::$RESULT_STATUSES) ) {
+                if (!in_array($data['status'], Twispay_TW_Status_Updater::$RESULT_STATUSES)) {
                     Twispay_TW_Logger::twispay_tw_log($tw_lang['log_error_wrong_status'] . $data['status']);
-                    Twispay_TW_Logger::twispay_tw_logTransaction( $data );
+                    Twispay_TW_Logger::twispay_tw_logTransaction($data);
 
-                    return FALSE;
+                    return false;
                 }
 
-                Twispay_TW_Logger::twispay_tw_logTransaction( $data );
-                Twispay_TW_Logger::twispay_tw_log( $tw_lang['log_ok_validating_complete'] . $data['id_cart'] );
+                Twispay_TW_Logger::twispay_tw_logTransaction($data);
+                Twispay_TW_Logger::twispay_tw_log($tw_lang['log_ok_validating_complete'] . $data['id_cart']);
 
-                return TRUE;
+                return true;
             }
         }
     }

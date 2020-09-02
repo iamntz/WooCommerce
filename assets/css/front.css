@@ -13,13 +13,13 @@
 .wc_payment_method.payment_method_twispay > label:first-of-type img {
     max-height: 75px;
     max-width: 100%;
-/*  margin-top: -16px;*/
+    /*  margin-top: -16px;*/
 }
 
 .wc_payment_method.payment_method_twispay > label:first-of-type {
     margin: 23px 0;
 }
 
-@media(max-width: 989px) {
+@media (max-width: 989px) {
 
 }

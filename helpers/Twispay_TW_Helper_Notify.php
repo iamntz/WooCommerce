@@ -11,10 +11,12 @@
  */
 
 /* Exit if the file is accessed directly. */
-if ( !defined('ABSPATH') ) { exit; }
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 /* Security class check */
-if ( ! class_exists( 'Twispay_TW_Helper_Notify' ) ) :
+if (!class_exists('Twispay_TW_Helper_Notify')) :
     /**
      * Twispay Helper Class
      *
@@ -22,7 +24,8 @@ if ( ! class_exists( 'Twispay_TW_Helper_Notify' ) ) :
      * of `jsonRequest` and `checksum` that need to be
      * sent by POST when making a Twispay order.
      */
-    class Twispay_TW_Helper_Notify{
+    class Twispay_TW_Helper_Notify
+    {
         /**
          * Get the `jsonRequest` parameter (order parameters as JSON and base64 encoded).
          *
@@ -30,7 +33,8 @@ if ( ! class_exists( 'Twispay_TW_Helper_Notify' ) ) :
          *
          * @return string
          */
-        public static function getBase64JsonRequest(array $orderData){
+        public static function getBase64JsonRequest(array $orderData)
+        {
             return base64_encode(json_encode($orderData));
         }
 
@@ -38,13 +42,14 @@ if ( ! class_exists( 'Twispay_TW_Helper_Notify' ) ) :
         /**
          * Get the `checksum` parameter (the checksum computed over the `jsonRequest` and base64 encoded).
          *
-         * @param array $orderData The order parameters.
+         * @param array  $orderData The order parameters.
          * @param string $secretKey The secret key (from Twispay).
          *
          * @return string
          */
-        public static function getBase64Checksum(array $orderData, $secretKey){
-            $hmacSha512 = hash_hmac(/*algo*/'sha512', json_encode($orderData), $secretKey, /*raw_output*/true);
+        public static function getBase64Checksum(array $orderData, $secretKey)
+        {
+            $hmacSha512 = hash_hmac(/*algo*/ 'sha512', json_encode($orderData), $secretKey, /*raw_output*/ true);
             return base64_encode($hmacSha512);
         }
     }

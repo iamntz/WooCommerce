@@ -11,37 +11,40 @@
  */
 
 // Exit if the file is accessed directly
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
 // Security class check
-if ( ! class_exists( 'Twispay_TW_Shortcodes' ) ) :
-
-/**
- * Twispay Shorcodes Class
- */
-class Twispay_TW_Shortcodes {
-    /**
-     * Twispay_TW_Shortcodes Constructor
-     *
-     * @public
-     * @return void
-     */
-    public function __construct() {
-        add_shortcode( 'tw_payment_confirmation', array( $this, 'twispay_tw_payment_confirmation_handler' ) );
-    }
+if (!class_exists('Twispay_TW_Shortcodes')) :
 
     /**
-     * Renders the Twispay Payment Confirmation Form
-     *
-     * @public
-     * @return string Payment Confirmation Form
+     * Twispay Shorcodes Class
      */
-    public function twispay_tw_payment_confirmation_handler( $atts ) {
-	    return TW()->payment_confirmation->twispay_tw_payment_confirmation_form();
+    class Twispay_TW_Shortcodes
+    {
+        /**
+         * Twispay_TW_Shortcodes Constructor
+         *
+         * @public
+         * @return void
+         */
+        public function __construct()
+        {
+            add_shortcode('tw_payment_confirmation', [$this, 'twispay_tw_payment_confirmation_handler']);
+        }
+
+        /**
+         * Renders the Twispay Payment Confirmation Form
+         *
+         * @public
+         * @return string Payment Confirmation Form
+         */
+        public function twispay_tw_payment_confirmation_handler($atts)
+        {
+            return TW()->payment_confirmation->twispay_tw_payment_confirmation_form();
+        }
     }
-}
 
 endif; // End if class_exists
 

@@ -2,22 +2,23 @@
 /**
  * Administration API: Copy of WP_List_Table class
  *
- * @package WordPress
+ * @package    WordPress
  * @subpackage List_Table
- * @since 3.1.0
+ * @since      3.1.0
  */
 
 /**
  * Base class for displaying a list of items in an ajaxified HTML table.
  *
- * @since 3.1.0
+ * @since  3.1.0
  * @access private
  */
-class Twispay_Tw_List_Table {
+class Twispay_Tw_List_Table
+{
     /**
      * The current list of items.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      * @var array
      */
@@ -26,7 +27,7 @@ class Twispay_Tw_List_Table {
     /**
      * Various information about the current table.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access protected
      * @var array
      */
@@ -35,16 +36,16 @@ class Twispay_Tw_List_Table {
     /**
      * Various information needed for displaying the pagination.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access protected
      * @var array
      */
-    protected $_pagination_args = array();
+    protected $_pagination_args = [];
 
     /**
      * The current screen.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access protected
      * @var object
      */
@@ -53,7 +54,7 @@ class Twispay_Tw_List_Table {
     /**
      * Cached bulk actions.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access private
      * @var array
      */
@@ -62,7 +63,7 @@ class Twispay_Tw_List_Table {
     /**
      * Cached pagination output.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access private
      * @var string
      */
@@ -71,16 +72,16 @@ class Twispay_Tw_List_Table {
     /**
      * The view switcher modes.
      *
-     * @since 4.1.0
+     * @since  4.1.0
      * @access protected
      * @var array
      */
-    protected $modes = array();
+    protected $modes = [];
 
     /**
      * Stores the value returned by ->get_column_info().
      *
-     * @since 4.1.0
+     * @since  4.1.0
      * @access protected
      * @var array
      */
@@ -92,7 +93,7 @@ class Twispay_Tw_List_Table {
      * @access protected
      * @var array
      */
-    protected $compat_fields = array( '_args', '_pagination_args', 'screen', '_actions', '_pagination' );
+    protected $compat_fields = ['_args', '_pagination_args', 'screen', '_actions', '_pagination'];
 
     /**
      * {@internal Missing Summary}
@@ -100,10 +101,10 @@ class Twispay_Tw_List_Table {
      * @access protected
      * @var array
      */
-    protected $compat_methods = array( 'set_pagination_args', 'get_views', 'get_bulk_actions', 'bulk_actions',
+    protected $compat_methods = ['set_pagination_args', 'get_views', 'get_bulk_actions', 'bulk_actions',
         'row_actions', 'months_dropdown', 'view_switcher', 'comments_bubble', 'get_items_per_page', 'pagination',
         'get_sortable_columns', 'get_column_info', 'get_table_classes', 'display_tablenav', 'extra_tablenav',
-        'single_row_columns' );
+        'single_row_columns'];
 
     /**
      * Constructor.
@@ -111,70 +112,74 @@ class Twispay_Tw_List_Table {
      * The child class should call this constructor from its own constructor to override
      * the default $args.
      *
-     * @since 3.1.0
-     * @access public
+     * @param array|string $args     {
+     *                               Array or string of arguments.
      *
-     * @param array|string $args {
-     *     Array or string of arguments.
-     *
-     *     @type string $plural   Plural value used for labels and the objects being listed.
+     * @type string        $plural   Plural value used for labels and the objects being listed.
      *                            This affects things such as CSS class-names and nonces used
      *                            in the list table, e.g. 'posts'. Default empty.
-     *     @type string $singular Singular label for an object being listed, e.g. 'post'.
+     * @type string        $singular Singular label for an object being listed, e.g. 'post'.
      *                            Default empty
-     *     @type bool   $ajax     Whether the list table supports Ajax. This includes loading
+     * @type bool          $ajax     Whether the list table supports Ajax. This includes loading
      *                            and sorting data, for example. If true, the class will call
      *                            the _js_vars() method in the footer to provide variables
      *                            to any scripts handling Ajax events. Default false.
-     *     @type string $screen   String containing the hook name used to determine the current
+     * @type string        $screen   String containing the hook name used to determine the current
      *                            screen. If left null, the current screen will be automatically set.
      *                            Default null.
      * }
+     * @since  3.1.0
+     * @access public
+     *
      */
-    public function __construct( $args = array() ) {
-        $args = wp_parse_args( $args, array(
+    public function __construct($args = [])
+    {
+        $args = wp_parse_args($args, [
             'plural' => '',
             'singular' => '',
             'ajax' => false,
-            'screen' => null
-        ) );
+            'screen' => null,
+        ]);
 
-        $this->screen = convert_to_screen( $args['screen'] );
+        $this->screen = convert_to_screen($args['screen']);
 
-        add_filter( "manage_{$this->screen->id}_columns", array( $this, 'get_columns' ), 0 );
+        add_filter("manage_{$this->screen->id}_columns", [$this, 'get_columns'], 0);
 
-        if ( ! $args['plural'] )
+        if (!$args['plural']) {
             $args['plural'] = $this->screen->base;
+        }
 
-        $args['plural'] = sanitize_key( $args['plural'] );
-        $args['singular'] = sanitize_key( $args['singular'] );
+        $args['plural'] = sanitize_key($args['plural']);
+        $args['singular'] = sanitize_key($args['singular']);
 
         $this->_args = $args;
 
-        if ( $args['ajax'] ) {
+        if ($args['ajax']) {
             // wp_enqueue_script( 'list-table' );
-            add_action( 'admin_footer', array( $this, '_js_vars' ) );
+            add_action('admin_footer', [$this, '_js_vars']);
         }
 
-        if ( empty( $this->modes ) ) {
-            $this->modes = array(
-                'list'    => __( 'List View' ),
-                'excerpt' => __( 'Excerpt View' )
-            );
+        if (empty($this->modes)) {
+            $this->modes = [
+                'list' => __('List View'),
+                'excerpt' => __('Excerpt View'),
+            ];
         }
     }
 
     /**
      * Make private properties readable for backward compatibility.
      *
-     * @since 4.0.0
+     * @param string $name Property to get.
+     *
+     * @return mixed Property.
+     * @since  4.0.0
      * @access public
      *
-     * @param string $name Property to get.
-     * @return mixed Property.
      */
-    public function __get( $name ) {
-        if ( in_array( $name, $this->compat_fields ) ) {
+    public function __get($name)
+    {
+        if (in_array($name, $this->compat_fields)) {
             return $this->$name;
         }
     }
@@ -182,15 +187,17 @@ class Twispay_Tw_List_Table {
     /**
      * Make private properties settable for backward compatibility.
      *
-     * @since 4.0.0
-     * @access public
-     *
      * @param string $name  Property to check if set.
      * @param mixed  $value Property value.
+     *
      * @return mixed Newly-set property.
+     * @since  4.0.0
+     * @access public
+     *
      */
-    public function __set( $name, $value ) {
-        if ( in_array( $name, $this->compat_fields ) ) {
+    public function __set($name, $value)
+    {
+        if (in_array($name, $this->compat_fields)) {
             return $this->$name = $value;
         }
     }
@@ -198,45 +205,51 @@ class Twispay_Tw_List_Table {
     /**
      * Make private properties checkable for backward compatibility.
      *
-     * @since 4.0.0
+     * @param string $name Property to check if set.
+     *
+     * @return bool Whether the property is set.
+     * @since  4.0.0
      * @access public
      *
-     * @param string $name Property to check if set.
-     * @return bool Whether the property is set.
      */
-    public function __isset( $name ) {
-        if ( in_array( $name, $this->compat_fields ) ) {
-            return isset( $this->$name );
+    public function __isset($name)
+    {
+        if (in_array($name, $this->compat_fields)) {
+            return isset($this->$name);
         }
     }
 
     /**
      * Make private properties un-settable for backward compatibility.
      *
-     * @since 4.0.0
+     * @param string $name Property to unset.
+     *
+     * @since  4.0.0
      * @access public
      *
-     * @param string $name Property to unset.
      */
-    public function __unset( $name ) {
-        if ( in_array( $name, $this->compat_fields ) ) {
-            unset( $this->$name );
+    public function __unset($name)
+    {
+        if (in_array($name, $this->compat_fields)) {
+            unset($this->$name);
         }
     }
 
     /**
      * Make private/protected methods readable for backward compatibility.
      *
-     * @since 4.0.0
-     * @access public
-     *
      * @param callable $name      Method to call.
      * @param array    $arguments Arguments to pass when calling.
+     *
      * @return mixed|bool Return value of the callback, false otherwise.
+     * @since  4.0.0
+     * @access public
+     *
      */
-    public function __call( $name, $arguments ) {
-        if ( in_array( $name, $this->compat_methods ) ) {
-            return call_user_func_array( array( $this, $name ), $arguments );
+    public function __call($name, $arguments)
+    {
+        if (in_array($name, $this->compat_methods)) {
+            return call_user_func_array([$this, $name], $arguments);
         }
         return false;
     }
@@ -244,47 +257,53 @@ class Twispay_Tw_List_Table {
     /**
      * Checks the current user's permissions
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      * @abstract
      */
-    public function ajax_user_can() {
-        die( 'function WP_List_Table::ajax_user_can() must be over-ridden in a sub-class.' );
+    public function ajax_user_can()
+    {
+        die('function WP_List_Table::ajax_user_can() must be over-ridden in a sub-class.');
     }
 
     /**
      * Prepares the list of items for displaying.
-     * @uses WP_List_Table::set_pagination_args()
      *
-     * @since 3.1.0
+     * @uses   WP_List_Table::set_pagination_args()
+     *
+     * @since  3.1.0
      * @access public
      * @abstract
      */
-    public function prepare_items() {
-        die( 'function WP_List_Table::prepare_items() must be over-ridden in a sub-class.' );
+    public function prepare_items()
+    {
+        die('function WP_List_Table::prepare_items() must be over-ridden in a sub-class.');
     }
 
     /**
      * An internal method that sets all the necessary pagination arguments
      *
-     * @since 3.1.0
+     * @param array|string $args Array or string of arguments with information about the pagination.
+     *
+     * @since  3.1.0
      * @access protected
      *
-     * @param array|string $args Array or string of arguments with information about the pagination.
      */
-    protected function set_pagination_args( $args ) {
-        $args = wp_parse_args( $args, array(
+    protected function set_pagination_args($args)
+    {
+        $args = wp_parse_args($args, [
             'total_items' => 0,
             'total_pages' => 0,
-            'per_page' => 0
-        ) );
+            'per_page' => 0,
+        ]);
 
-        if ( ! $args['total_pages'] && $args['per_page'] > 0 )
-            $args['total_pages'] = ceil( $args['total_items'] / $args['per_page'] );
+        if (!$args['total_pages'] && $args['per_page'] > 0) {
+            $args['total_pages'] = ceil($args['total_items'] / $args['per_page']);
+        }
 
         // Redirect if page number is invalid and headers are not already sent.
-        if ( ! headers_sent() && ! wp_doing_ajax() && $args['total_pages'] > 0 && $this->get_pagenum() > $args['total_pages'] ) {
-            wp_redirect( add_query_arg( 'paged', $args['total_pages'] ) );
+        if (!headers_sent() && !wp_doing_ajax() && $args['total_pages'] > 0 && $this->get_pagenum() > $args['total_pages']) {
+            wp_redirect(add_query_arg('paged', $args['total_pages']));
             exit;
         }
 
@@ -294,19 +313,21 @@ class Twispay_Tw_List_Table {
     /**
      * Access the pagination args.
      *
-     * @since 3.1.0
-     * @access public
-     *
      * @param string $key Pagination argument to retrieve. Common values include 'total_items',
      *                    'total_pages', 'per_page', or 'infinite_scroll'.
+     *
      * @return int Number of items that correspond to the given pagination argument.
+     * @since  3.1.0
+     * @access public
+     *
      */
-    public function get_pagination_arg( $key ) {
-        if ( 'page' === $key ) {
+    public function get_pagination_arg($key)
+    {
+        if ('page' === $key) {
             return $this->get_pagenum();
         }
 
-        if ( isset( $this->_pagination_args[$key] ) ) {
+        if (isset($this->_pagination_args[$key])) {
             return $this->_pagination_args[$key];
         }
     }
@@ -314,54 +335,64 @@ class Twispay_Tw_List_Table {
     /**
      * Whether the table has items to display or not
      *
-     * @since 3.1.0
+     * @return bool
+     * @since  3.1.0
      * @access public
      *
-     * @return bool
      */
-    public function has_items() {
-        return ! empty( $this->items );
+    public function has_items()
+    {
+        return !empty($this->items);
     }
 
     /**
      * Message to be displayed when there are no items
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      */
-    public function no_items() {
-        _e( 'No items found.' );
+    public function no_items()
+    {
+        _e('No items found.');
     }
 
     /**
      * Displays the search box.
      *
-     * @since 3.1.0
-     * @access public
-     *
      * @param string $text     The 'submit' button label.
      * @param string $input_id ID attribute value for the search input field.
+     *
+     * @since  3.1.0
+     * @access public
+     *
      */
-    public function search_box( $text, $input_id ) {
-        if ( empty( $_REQUEST['s'] ) && ! $this->has_items() )
+    public function search_box($text, $input_id)
+    {
+        if (empty($_REQUEST['s']) && !$this->has_items()) {
             return;
+        }
 
         $input_id = $input_id . '-search-input';
 
-        if ( ! empty( $_REQUEST['orderby'] ) )
-            echo '<input type="hidden" name="orderby" value="' . esc_attr( $_REQUEST['orderby'] ) . '" />';
-        if ( ! empty( $_REQUEST['order'] ) )
-            echo '<input type="hidden" name="order" value="' . esc_attr( $_REQUEST['order'] ) . '" />';
-        if ( ! empty( $_REQUEST['post_mime_type'] ) )
-            echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( $_REQUEST['post_mime_type'] ) . '" />';
-        if ( ! empty( $_REQUEST['detached'] ) )
-            echo '<input type="hidden" name="detached" value="' . esc_attr( $_REQUEST['detached'] ) . '" />';
+        if (!empty($_REQUEST['orderby'])) {
+            echo '<input type="hidden" name="orderby" value="' . esc_attr($_REQUEST['orderby']) . '" />';
+        }
+        if (!empty($_REQUEST['order'])) {
+            echo '<input type="hidden" name="order" value="' . esc_attr($_REQUEST['order']) . '" />';
+        }
+        if (!empty($_REQUEST['post_mime_type'])) {
+            echo '<input type="hidden" name="post_mime_type" value="' . esc_attr($_REQUEST['post_mime_type']) . '" />';
+        }
+        if (!empty($_REQUEST['detached'])) {
+            echo '<input type="hidden" name="detached" value="' . esc_attr($_REQUEST['detached']) . '" />';
+        }
         ?>
-            <p class="search-box">
-                <label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo $text; ?>:</label>
-                <input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php _admin_search_query(); ?>" />
-                <?php submit_button( $text, '', '', false, array( 'id' => 'search-submit' ) ); ?>
-            </p>
+        <p class="search-box">
+            <label class="screen-reader-text" for="<?php echo esc_attr($input_id); ?>"><?php echo $text; ?>:</label>
+            <input type="search" id="<?php echo esc_attr($input_id); ?>" name="s"
+                   value="<?php _admin_search_query(); ?>"/>
+            <?php submit_button($text, '', '', false, ['id' => 'search-submit']); ?>
+        </p>
         <?php
     }
 
@@ -369,22 +400,24 @@ class Twispay_Tw_List_Table {
      * Get an associative array ( id => link ) with the list
      * of views available on this table.
      *
-     * @since 3.1.0
+     * @return array
+     * @since  3.1.0
      * @access protected
      *
-     * @return array
      */
-    protected function get_views() {
-        return array();
+    protected function get_views()
+    {
+        return [];
     }
 
     /**
      * Display the list of views available on this table.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      */
-    public function views() {
+    public function views()
+    {
         $views = $this->get_views();
         /**
          * Filters the list of available list table views.
@@ -392,22 +425,24 @@ class Twispay_Tw_List_Table {
          * The dynamic portion of the hook name, `$this->screen->id`, refers
          * to the ID of the current screen, usually a string.
          *
+         * @param array $views An array of available list table views.
+         *
          * @since 3.5.0
          *
-         * @param array $views An array of available list table views.
          */
-        $views = apply_filters( "views_{$this->screen->id}", $views );
+        $views = apply_filters("views_{$this->screen->id}", $views);
 
-        if ( empty( $views ) )
+        if (empty($views)) {
             return;
+        }
 
-        $this->screen->render_screen_reader_content( 'heading_views' );
+        $this->screen->render_screen_reader_content('heading_views');
 
         echo "<ul class='subsubsub'>\n";
-        foreach ( $views as $class => $view ) {
-            $views[ $class ] = "\t<li class='$class'>$view";
+        foreach ($views as $class => $view) {
+            $views[$class] = "\t<li class='$class'>$view";
         }
-        echo implode( " |</li>\n", $views ) . "</li>\n";
+        echo implode(" |</li>\n", $views) . "</li>\n";
         echo "</ul>";
     }
 
@@ -415,26 +450,29 @@ class Twispay_Tw_List_Table {
      * Get an associative array ( option_name => option_title ) with the list
      * of bulk actions available on this table.
      *
-     * @since 3.1.0
+     * @return array
+     * @since  3.1.0
      * @access protected
      *
-     * @return array
      */
-    protected function get_bulk_actions() {
-        return array();
+    protected function get_bulk_actions()
+    {
+        return [];
     }
 
     /**
      * Display the bulk actions dropdown.
      *
-     * @since 3.1.0
-     * @access protected
-     *
      * @param string $which The location of the bulk actions: 'top' or 'bottom'.
      *                      This is designated as optional for backward compatibility.
+     *
+     * @since  3.1.0
+     * @access protected
+     *
      */
-    protected function bulk_actions( $which = '' ) {
-        if ( is_null( $this->_actions ) ) {
+    protected function bulk_actions($which = '')
+    {
+        if (is_null($this->_actions)) {
             $this->_actions = $this->get_bulk_actions();
             /**
              * Filters the list table Bulk Actions drop-down.
@@ -444,24 +482,26 @@ class Twispay_Tw_List_Table {
              *
              * This filter can currently only be used to remove bulk actions.
              *
+             * @param array $actions An array of the available bulk actions.
+             *
              * @since 3.5.0
              *
-             * @param array $actions An array of the available bulk actions.
              */
-            $this->_actions = apply_filters( "bulk_actions-{$this->screen->id}", $this->_actions );
+            $this->_actions = apply_filters("bulk_actions-{$this->screen->id}", $this->_actions);
             $two = '';
         } else {
             $two = '2';
         }
 
-        if ( empty( $this->_actions ) )
+        if (empty($this->_actions)) {
             return;
+        }
 
-        echo '<label for="bulk-action-selector-' . esc_attr( $which ) . '" class="screen-reader-text">' . __( 'Select bulk action' ) . '</label>';
-        echo '<select name="action' . $two . '" id="bulk-action-selector-' . esc_attr( $which ) . "\">\n";
-        echo '<option value="-1">' . __( 'Bulk Actions' ) . "</option>\n";
+        echo '<label for="bulk-action-selector-' . esc_attr($which) . '" class="screen-reader-text">' . __('Select bulk action') . '</label>';
+        echo '<select name="action' . $two . '" id="bulk-action-selector-' . esc_attr($which) . "\">\n";
+        echo '<option value="-1">' . __('Bulk Actions') . "</option>\n";
 
-        foreach ( $this->_actions as $name => $title ) {
+        foreach ($this->_actions as $name => $title) {
             $class = 'edit' === $name ? ' class="hide-if-no-js"' : '';
 
             echo "\t" . '<option value="' . $name . '"' . $class . '>' . $title . "</option>\n";
@@ -469,27 +509,31 @@ class Twispay_Tw_List_Table {
 
         echo "</select>\n";
 
-        submit_button( __( 'Apply' ), 'action', '', false, array( 'id' => "doaction$two" ) );
+        submit_button(__('Apply'), 'action', '', false, ['id' => "doaction$two"]);
         echo "\n";
     }
 
     /**
      * Get the current action selected from the bulk actions dropdown.
      *
-     * @since 3.1.0
+     * @return string|false The action name or False if no action was selected
+     * @since  3.1.0
      * @access public
      *
-     * @return string|false The action name or False if no action was selected
      */
-    public function current_action() {
-        if ( isset( $_REQUEST['filter_action'] ) && ! empty( $_REQUEST['filter_action'] ) )
+    public function current_action()
+    {
+        if (isset($_REQUEST['filter_action']) && !empty($_REQUEST['filter_action'])) {
             return false;
+        }
 
-        if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] )
+        if (isset($_REQUEST['action']) && -1 != $_REQUEST['action']) {
             return $_REQUEST['action'];
+        }
 
-        if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] )
+        if (isset($_REQUEST['action2']) && -1 != $_REQUEST['action2']) {
             return $_REQUEST['action2'];
+        }
 
         return false;
     }
@@ -497,29 +541,32 @@ class Twispay_Tw_List_Table {
     /**
      * Generate row actions div
      *
-     * @since 3.1.0
+     * @param array $actions        The list of actions
+     * @param bool  $always_visible Whether the actions should be always visible
+     *
+     * @return string
+     * @since  3.1.0
      * @access protected
      *
-     * @param array $actions The list of actions
-     * @param bool $always_visible Whether the actions should be always visible
-     * @return string
      */
-    protected function row_actions( $actions, $always_visible = false ) {
-        $action_count = count( $actions );
+    protected function row_actions($actions, $always_visible = false)
+    {
+        $action_count = count($actions);
         $i = 0;
 
-        if ( ! $action_count )
+        if (!$action_count) {
             return '';
+        }
 
-        $out = '<div class="' . ( $always_visible ? 'row-actions visible' : 'row-actions' ) . '">';
-        foreach ( $actions as $action => $link ) {
+        $out = '<div class="' . ($always_visible ? 'row-actions visible' : 'row-actions') . '">';
+        foreach ($actions as $action => $link) {
             ++$i;
-            ( $i == $action_count ) ? $sep = '' : $sep = ' | ';
+            ($i == $action_count) ? $sep = '' : $sep = ' | ';
             $out .= "<span class='$action'>$link$sep</span>";
         }
         $out .= '</div>';
 
-        $out .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details' ) . '</span></button>';
+        $out .= '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __('Show more details') . '</span></button>';
 
         return $out;
     }
@@ -527,161 +574,172 @@ class Twispay_Tw_List_Table {
     /**
      * Display a monthly dropdown for filtering items
      *
-     * @since 3.1.0
-     * @access protected
+     * @param string     $post_type
      *
      * @global wpdb      $wpdb
      * @global WP_Locale $wp_locale
      *
-     * @param string $post_type
+     * @since  3.1.0
+     * @access protected
+     *
      */
-    protected function months_dropdown( $post_type ) {
+    protected function months_dropdown($post_type)
+    {
         global $wpdb, $wp_locale;
 
         /**
          * Filters whether to remove the 'Months' drop-down from the post list table.
          *
-         * @since 4.2.0
-         *
          * @param bool   $disable   Whether to disable the drop-down. Default false.
          * @param string $post_type The post type.
+         *
+         * @since 4.2.0
+         *
          */
-        if ( apply_filters( 'disable_months_dropdown', false, $post_type ) ) {
+        if (apply_filters('disable_months_dropdown', false, $post_type)) {
             return;
         }
 
         $extra_checks = "AND post_status != 'auto-draft'";
-        if ( ! isset( $_GET['post_status'] ) || 'trash' !== $_GET['post_status'] ) {
+        if (!isset($_GET['post_status']) || 'trash' !== $_GET['post_status']) {
             $extra_checks .= " AND post_status != 'trash'";
-        } elseif ( isset( $_GET['post_status'] ) ) {
-            $extra_checks = $wpdb->prepare( ' AND post_status = %s', $_GET['post_status'] );
+        } else if (isset($_GET['post_status'])) {
+            $extra_checks = $wpdb->prepare(' AND post_status = %s', $_GET['post_status']);
         }
 
-        $months = $wpdb->get_results( $wpdb->prepare( "
+        $months = $wpdb->get_results($wpdb->prepare("
             SELECT DISTINCT YEAR( post_date ) AS year, MONTH( post_date ) AS month
             FROM $wpdb->posts
             WHERE post_type = %s
             $extra_checks
             ORDER BY post_date DESC
-        ", $post_type ) );
+        ", $post_type));
 
         /**
          * Filters the 'Months' drop-down results.
          *
-         * @since 3.7.0
-         *
          * @param object $months    The months drop-down query results.
          * @param string $post_type The post type.
+         *
+         * @since 3.7.0
+         *
          */
-        $months = apply_filters( 'months_dropdown_results', $months, $post_type );
+        $months = apply_filters('months_dropdown_results', $months, $post_type);
 
-        $month_count = count( $months );
+        $month_count = count($months);
 
-        if ( ! $month_count || ( 1 == $month_count && 0 == $months[0]->month ) )
+        if (!$month_count || (1 == $month_count && 0 == $months[0]->month)) {
             return;
+        }
 
-        $m = isset( $_GET['m'] ) ? (int) $_GET['m'] : 0;
+        $m = isset($_GET['m']) ? (int) $_GET['m'] : 0;
         ?>
-            <label for="filter-by-date" class="screen-reader-text"><?php _e( 'Filter by date' ); ?></label>
-            <select name="m" id="filter-by-date">
-                    <option<?php selected( $m, 0 ); ?> value="0"><?php _e( 'All dates' ); ?></option>
-        <?php
-                    foreach ( $months as $arc_row ) {
-                            if ( 0 == $arc_row->year )
-                                    continue;
-            
-                            $month = zeroise( $arc_row->month, 2 );
-                            $year = $arc_row->year;
-            
-                            printf( "<option %s value='%s'>%s</option>\n",
-                                    selected( $m, $year . $month, false ),
-                                    esc_attr( $arc_row->year . $month ),
-                                    /* translators: 1: month name, 2: 4-digit year */
-                                    sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $month ), $year )
-                            );
-                    }
-        ?>
-            </select>
+        <label for="filter-by-date" class="screen-reader-text"><?php _e('Filter by date'); ?></label>
+        <select name="m" id="filter-by-date">
+            <option<?php selected($m, 0); ?> value="0"><?php _e('All dates'); ?></option>
+            <?php
+            foreach ($months as $arc_row) {
+                if (0 == $arc_row->year) {
+                    continue;
+                }
+
+                $month = zeroise($arc_row->month, 2);
+                $year = $arc_row->year;
+
+                printf("<option %s value='%s'>%s</option>\n",
+                    selected($m, $year . $month, false),
+                    esc_attr($arc_row->year . $month),
+                    /* translators: 1: month name, 2: 4-digit year */
+                    sprintf(__('%1$s %2$d'), $wp_locale->get_month($month), $year)
+                );
+            }
+            ?>
+        </select>
         <?php
     }
 
     /**
      * Display a view switcher
      *
-     * @since 3.1.0
+     * @param string $current_mode
+     *
+     * @since  3.1.0
      * @access protected
      *
-     * @param string $current_mode
      */
-    protected function view_switcher( $current_mode ) {
+    protected function view_switcher($current_mode)
+    {
         ?>
-            <input type="hidden" name="mode" value="<?php echo esc_attr( $current_mode ); ?>" />
-            <div class="view-switch">
-        <?php
-                foreach ( $this->modes as $mode => $title ) {
-                        $classes = array( 'view-' . $mode );
-                        if ( $current_mode === $mode )
-                                $classes[] = 'current';
-                        printf(
-                                "<a href='%s' class='%s' id='view-switch-$mode'><span class='screen-reader-text'>%s</span></a>\n",
-                                esc_url( add_query_arg( 'mode', $mode ) ),
-                                implode( ' ', $classes ),
-                                $title
-                        );
+        <input type="hidden" name="mode" value="<?php echo esc_attr($current_mode); ?>"/>
+        <div class="view-switch">
+            <?php
+            foreach ($this->modes as $mode => $title) {
+                $classes = ['view-' . $mode];
+                if ($current_mode === $mode) {
+                    $classes[] = 'current';
                 }
-        ?>
-            </div>
+                printf(
+                    "<a href='%s' class='%s' id='view-switch-$mode'><span class='screen-reader-text'>%s</span></a>\n",
+                    esc_url(add_query_arg('mode', $mode)),
+                    implode(' ', $classes),
+                    $title
+                );
+            }
+            ?>
+        </div>
         <?php
     }
 
     /**
      * Display a comment count bubble
      *
-     * @since 3.1.0
-     * @access protected
-     *
      * @param int $post_id          The post ID.
      * @param int $pending_comments Number of pending comments.
+     *
+     * @since  3.1.0
+     * @access protected
+     *
      */
-    protected function comments_bubble( $post_id, $pending_comments ) {
+    protected function comments_bubble($post_id, $pending_comments)
+    {
         $approved_comments = get_comments_number();
 
-        $approved_comments_number = number_format_i18n( $approved_comments );
-        $pending_comments_number = number_format_i18n( $pending_comments );
+        $approved_comments_number = number_format_i18n($approved_comments);
+        $pending_comments_number = number_format_i18n($pending_comments);
 
-        $approved_only_phrase = sprintf( _n( '%s comment', '%s comments', $approved_comments ), $approved_comments_number );
-        $approved_phrase = sprintf( _n( '%s approved comment', '%s approved comments', $approved_comments ), $approved_comments_number );
-        $pending_phrase = sprintf( _n( '%s pending comment', '%s pending comments', $pending_comments ), $pending_comments_number );
+        $approved_only_phrase = sprintf(_n('%s comment', '%s comments', $approved_comments), $approved_comments_number);
+        $approved_phrase = sprintf(_n('%s approved comment', '%s approved comments', $approved_comments), $approved_comments_number);
+        $pending_phrase = sprintf(_n('%s pending comment', '%s pending comments', $pending_comments), $pending_comments_number);
 
         // No comments at all.
-        if ( ! $approved_comments && ! $pending_comments ) {
-            printf( '<span aria-hidden="true">Ñ</span><span class="screen-reader-text">%s</span>',
-                __( 'No comments' )
+        if (!$approved_comments && !$pending_comments) {
+            printf('<span aria-hidden="true">Ñ</span><span class="screen-reader-text">%s</span>',
+                __('No comments')
             );
-        // Approved comments have different display depending on some conditions.
-        } elseif ( $approved_comments ) {
-            printf( '<a href="%s" class="post-com-count post-com-count-approved"><span class="comment-count-approved" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
-                esc_url( add_query_arg( array( 'p' => $post_id, 'comment_status' => 'approved' ), admin_url( 'edit-comments.php' ) ) ),
+            // Approved comments have different display depending on some conditions.
+        } else if ($approved_comments) {
+            printf('<a href="%s" class="post-com-count post-com-count-approved"><span class="comment-count-approved" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
+                esc_url(add_query_arg(['p' => $post_id, 'comment_status' => 'approved'], admin_url('edit-comments.php'))),
                 $approved_comments_number,
                 $pending_comments ? $approved_phrase : $approved_only_phrase
             );
         } else {
-            printf( '<span class="post-com-count post-com-count-no-comments"><span class="comment-count comment-count-no-comments" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>',
+            printf('<span class="post-com-count post-com-count-no-comments"><span class="comment-count comment-count-no-comments" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>',
                 $approved_comments_number,
-                $pending_comments ? __( 'No approved comments' ) : __( 'No comments' )
+                $pending_comments ? __('No approved comments') : __('No comments')
             );
         }
 
-        if ( $pending_comments ) {
-            printf( '<a href="%s" class="post-com-count post-com-count-pending"><span class="comment-count-pending" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
-                esc_url( add_query_arg( array( 'p' => $post_id, 'comment_status' => 'moderated' ), admin_url( 'edit-comments.php' ) ) ),
+        if ($pending_comments) {
+            printf('<a href="%s" class="post-com-count post-com-count-pending"><span class="comment-count-pending" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></a>',
+                esc_url(add_query_arg(['p' => $post_id, 'comment_status' => 'moderated'], admin_url('edit-comments.php'))),
                 $pending_comments_number,
                 $pending_phrase
             );
         } else {
-            printf( '<span class="post-com-count post-com-count-pending post-com-count-no-pending"><span class="comment-count comment-count-no-pending" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>',
+            printf('<span class="post-com-count post-com-count-pending post-com-count-no-pending"><span class="comment-count comment-count-no-pending" aria-hidden="true">%s</span><span class="screen-reader-text">%s</span></span>',
                 $pending_comments_number,
-                $approved_comments ? __( 'No pending comments' ) : __( 'No comments' )
+                $approved_comments ? __('No pending comments') : __('No comments')
             );
         }
     }
@@ -689,34 +747,39 @@ class Twispay_Tw_List_Table {
     /**
      * Get the current page number
      *
-     * @since 3.1.0
+     * @return int
+     * @since  3.1.0
      * @access public
      *
-     * @return int
      */
-    public function get_pagenum() {
-        $pagenum = isset( $_REQUEST['paged'] ) ? absint( $_REQUEST['paged'] ) : 0;
+    public function get_pagenum()
+    {
+        $pagenum = isset($_REQUEST['paged']) ? absint($_REQUEST['paged']) : 0;
 
-        if ( isset( $this->_pagination_args['total_pages'] ) && $pagenum > $this->_pagination_args['total_pages'] )
+        if (isset($this->_pagination_args['total_pages']) && $pagenum > $this->_pagination_args['total_pages']) {
             $pagenum = $this->_pagination_args['total_pages'];
+        }
 
-        return max( 1, $pagenum );
+        return max(1, $pagenum);
     }
 
     /**
      * Get number of items to display on a single page
      *
-     * @since 3.1.0
-     * @access protected
-     *
      * @param string $option
      * @param int    $default
+     *
      * @return int
+     * @since  3.1.0
+     * @access protected
+     *
      */
-    protected function get_items_per_page( $option, $default = 20 ) {
-        $per_page = (int) get_user_option( $option );
-        if ( empty( $per_page ) || $per_page < 1 )
+    protected function get_items_per_page($option, $default = 20)
+    {
+        $per_page = (int) get_user_option($option);
+        if (empty($per_page) || $per_page < 1) {
             $per_page = $default;
+        }
 
         /**
          * Filters the number of items to be displayed on each page of the list table.
@@ -727,128 +790,131 @@ class Twispay_Tw_List_Table {
          * 'users_network_per_page', 'edit_post_per_page', 'edit_page_per_page',
          * 'edit_{$post_type}_per_page', etc.
          *
+         * @param int $per_page Number of items to be displayed. Default 20.
+         *
          * @since 2.9.0
          *
-         * @param int $per_page Number of items to be displayed. Default 20.
          */
-        return (int) apply_filters( $option, $per_page );
+        return (int) apply_filters($option, $per_page);
     }
 
     /**
      * Display the pagination.
      *
-     * @since 3.1.0
+     * @param string $which
+     *
+     * @since  3.1.0
      * @access protected
      *
-     * @param string $which
      */
-    protected function pagination( $which ) {
-        if ( empty( $this->_pagination_args ) ) {
+    protected function pagination($which)
+    {
+        if (empty($this->_pagination_args)) {
             return;
         }
 
         $total_items = $this->_pagination_args['total_items'];
         $total_pages = $this->_pagination_args['total_pages'];
         $infinite_scroll = false;
-        if ( isset( $this->_pagination_args['infinite_scroll'] ) ) {
+        if (isset($this->_pagination_args['infinite_scroll'])) {
             $infinite_scroll = $this->_pagination_args['infinite_scroll'];
         }
 
-        if ( 'top' === $which && $total_pages > 1 ) {
-            $this->screen->render_screen_reader_content( 'heading_pagination' );
+        if ('top' === $which && $total_pages > 1) {
+            $this->screen->render_screen_reader_content('heading_pagination');
         }
 
-        $output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items ), number_format_i18n( $total_items ) ) . '</span>';
+        $output = '<span class="displaying-num">' . sprintf(_n('%s item', '%s items', $total_items), number_format_i18n($total_items)) . '</span>';
 
         $current = $this->get_pagenum();
         $removable_query_args = wp_removable_query_args();
 
-        $current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+        $current_url = set_url_scheme('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 
-        $current_url = remove_query_arg( $removable_query_args, $current_url );
+        $current_url = remove_query_arg($removable_query_args, $current_url);
 
-        $page_links = array();
+        $page_links = [];
 
         $total_pages_before = '<span class="paging-input">';
-        $total_pages_after  = '</span></span>';
+        $total_pages_after = '</span></span>';
 
         $disable_first = $disable_last = $disable_prev = $disable_next = false;
 
-        if ( $current == 1 ) {
+        if ($current == 1) {
             $disable_first = true;
             $disable_prev = true;
         }
-        if ( $current == 2 ) {
+        if ($current == 2) {
             $disable_first = true;
         }
-        if ( $current == $total_pages ) {
+        if ($current == $total_pages) {
             $disable_last = true;
             $disable_next = true;
         }
-        if ( $current == $total_pages - 1 ) {
+        if ($current == $total_pages - 1) {
             $disable_last = true;
         }
 
-        if ( $disable_first ) {
+        if ($disable_first) {
             $page_links[] = '<span class="tablenav-pages-navspan" aria-hidden="true">&laquo;</span>';
         } else {
-            $page_links[] = sprintf( "<a class='first-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
-                esc_url( remove_query_arg( 'paged', $current_url ) ),
-                __( 'First page' ),
+            $page_links[] = sprintf("<a class='first-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
+                esc_url(remove_query_arg('paged', $current_url)),
+                __('First page'),
                 '&laquo;'
             );
         }
 
-        if ( $disable_prev ) {
+        if ($disable_prev) {
             $page_links[] = '<span class="tablenav-pages-navspan" aria-hidden="true">&lsaquo;</span>';
         } else {
-            $page_links[] = sprintf( "<a class='prev-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
-                esc_url( add_query_arg( 'paged', max( 1, $current-1 ), $current_url ) ),
-                __( 'Previous page' ),
+            $page_links[] = sprintf("<a class='prev-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
+                esc_url(add_query_arg('paged', max(1, $current - 1), $current_url)),
+                __('Previous page'),
                 '&lsaquo;'
             );
         }
 
-        if ( 'bottom' === $which ) {
-            $html_current_page  = $current;
-            $total_pages_before = '<span class="screen-reader-text">' . __( 'Current Page' ) . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
+        if ('bottom' === $which) {
+            $html_current_page = $current;
+            $total_pages_before = '<span class="screen-reader-text">' . __('Current Page') . '</span><span id="table-paging" class="paging-input"><span class="tablenav-paging-text">';
         } else {
-            $html_current_page = sprintf( "%s<input class='current-page' id='current-page-selector' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
-                '<label for="current-page-selector" class="screen-reader-text">' . __( 'Current Page' ) . '</label>',
+            $html_current_page = sprintf("%s<input class='current-page' id='current-page-selector' type='text' name='paged' value='%s' size='%d' aria-describedby='table-paging' /><span class='tablenav-paging-text'>",
+                '<label for="current-page-selector" class="screen-reader-text">' . __('Current Page') . '</label>',
                 $current,
-                strlen( $total_pages )
+                strlen($total_pages)
             );
         }
-        $html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-        $page_links[] = $total_pages_before . sprintf( _x( '%1$s of %2$s', 'paging' ), $html_current_page, $html_total_pages ) . $total_pages_after;
+        $html_total_pages = sprintf("<span class='total-pages'>%s</span>", number_format_i18n($total_pages));
+        $page_links[] = $total_pages_before . sprintf(_x('%1$s of %2$s', 'paging'), $html_current_page, $html_total_pages) . $total_pages_after;
 
-        if ( $disable_next ) {
+        if ($disable_next) {
             $page_links[] = '<span class="tablenav-pages-navspan" aria-hidden="true">&rsaquo;</span>';
         } else {
-            $page_links[] = sprintf( "<a class='next-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
-                esc_url( add_query_arg( 'paged', min( $total_pages, $current+1 ), $current_url ) ),
-                __( 'Next page' ),
+            $page_links[] = sprintf("<a class='next-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
+                esc_url(add_query_arg('paged', min($total_pages, $current + 1), $current_url)),
+                __('Next page'),
                 '&rsaquo;'
             );
         }
 
-        if ( $disable_last ) {
+        if ($disable_last) {
             $page_links[] = '<span class="tablenav-pages-navspan" aria-hidden="true">&raquo;</span>';
         } else {
-            $page_links[] = sprintf( "<a class='last-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
-                esc_url( add_query_arg( 'paged', $total_pages, $current_url ) ),
-                __( 'Last page' ),
+            $page_links[] = sprintf("<a class='last-page' href='%s'><span class='screen-reader-text'>%s</span><span aria-hidden='true'>%s</span></a>",
+                esc_url(add_query_arg('paged', $total_pages, $current_url)),
+                __('Last page'),
                 '&raquo;'
             );
         }
 
         $pagination_links_class = 'pagination-links';
-        if ( ! empty( $infinite_scroll ) ) {
+        if (!empty($infinite_scroll)) {
             $pagination_links_class = ' hide-if-js';
         }
-        $output .= "\n<span class='$pagination_links_class'>" . join( "\n", $page_links ) . '</span>';
+        $output .= "\n<span class='$pagination_links_class'>" . join("\n", $page_links) . '</span>';
 
-        if ( $total_pages ) {
+        if ($total_pages) {
             $page_class = $total_pages < 2 ? ' one-page' : '';
         } else {
             $page_class = ' no-pages';
@@ -862,14 +928,15 @@ class Twispay_Tw_List_Table {
      * Get a list of columns. The format is:
      * 'internal-name' => 'Title'
      *
-     * @since 3.1.0
+     * @return array
+     * @since  3.1.0
      * @access public
      * @abstract
      *
-     * @return array
      */
-    public function get_columns() {
-        die( 'function WP_List_Table::get_columns() must be over-ridden in a sub-class.' );
+    public function get_columns()
+    {
+        die('function WP_List_Table::get_columns() must be over-ridden in a sub-class.');
     }
 
     /**
@@ -880,35 +947,37 @@ class Twispay_Tw_List_Table {
      *
      * The second format will make the initial sorting order be descending
      *
-     * @since 3.1.0
+     * @return array
+     * @since  3.1.0
      * @access protected
      *
-     * @return array
      */
-    protected function get_sortable_columns() {
-        return array();
+    protected function get_sortable_columns()
+    {
+        return [];
     }
 
     /**
      * Gets the name of the default primary column.
      *
-     * @since 4.3.0
+     * @return string Name of the default primary column, in this case, an empty string.
+     * @since  4.3.0
      * @access protected
      *
-     * @return string Name of the default primary column, in this case, an empty string.
      */
-    protected function get_default_primary_column_name() {
+    protected function get_default_primary_column_name()
+    {
         $columns = $this->get_columns();
         $column = '';
 
-        if ( empty( $columns ) ) {
+        if (empty($columns)) {
             return $column;
         }
 
         // We need a primary defined so responsive views show something,
         // so let's fall back to the first non-checkbox column.
-        foreach ( $columns as $col => $column_name ) {
-            if ( 'cb' === $col ) {
+        foreach ($columns as $col => $column_name) {
+            if ('cb' === $col) {
                 continue;
             }
 
@@ -922,44 +991,47 @@ class Twispay_Tw_List_Table {
     /**
      * Public wrapper for WP_List_Table::get_default_primary_column_name().
      *
-     * @since 4.4.0
+     * @return string Name of the default primary column.
+     * @since  4.4.0
      * @access public
      *
-     * @return string Name of the default primary column.
      */
-    public function get_primary_column() {
+    public function get_primary_column()
+    {
         return $this->get_primary_column_name();
     }
 
     /**
      * Gets the name of the primary column.
      *
-     * @since 4.3.0
+     * @return string The name of the primary column.
+     * @since  4.3.0
      * @access protected
      *
-     * @return string The name of the primary column.
      */
-    protected function get_primary_column_name() {
-        $columns = get_column_headers( $this->screen );
+    protected function get_primary_column_name()
+    {
+        $columns = get_column_headers($this->screen);
         $default = $this->get_default_primary_column_name();
 
         // If the primary column doesn't exist fall back to the
         // first non-checkbox column.
-        if ( ! isset( $columns[ $default ] ) ) {
+        if (!isset($columns[$default])) {
             $default = Twispay_Tw_List_Table::get_default_primary_column_name();
         }
 
         /**
          * Filters the name of the primary column for the current list table.
          *
-         * @since 4.3.0
-         *
          * @param string $default Column name default for the specific list table, e.g. 'name'.
          * @param string $context Screen ID for specific list table, e.g. 'plugins'.
+         *
+         * @since 4.3.0
+         *
          */
-        $column  = apply_filters( 'list_table_primary_column', $default, $this->screen->id );
+        $column = apply_filters('list_table_primary_column', $default, $this->screen->id);
 
-        if ( empty( $column ) || ! isset( $columns[ $column ] ) ) {
+        if (empty($column) || !isset($columns[$column])) {
             $column = $default;
         }
 
@@ -969,26 +1041,27 @@ class Twispay_Tw_List_Table {
     /**
      * Get a list of all, hidden and sortable columns, with filter applied
      *
-     * @since 3.1.0
+     * @return array
+     * @since  3.1.0
      * @access protected
      *
-     * @return array
      */
-    protected function get_column_info() {
+    protected function get_column_info()
+    {
         // $_column_headers is already set / cached
-        if ( isset( $this->_column_headers ) && is_array( $this->_column_headers ) ) {
+        if (isset($this->_column_headers) && is_array($this->_column_headers)) {
             // Back-compat for list tables that have been manually setting $_column_headers for horse reasons.
             // In 4.3, we added a fourth argument for primary column.
-            $column_headers = array( array(), array(), array(), $this->get_primary_column_name() );
-            foreach ( $this->_column_headers as $key => $value ) {
-                $column_headers[ $key ] = $value;
+            $column_headers = [[], [], [], $this->get_primary_column_name()];
+            foreach ($this->_column_headers as $key => $value) {
+                $column_headers[$key] = $value;
             }
 
             return $column_headers;
         }
 
-        $columns = get_column_headers( $this->screen );
-        $hidden = get_hidden_columns( $this->screen );
+        $columns = get_column_headers($this->screen);
+        $hidden = get_hidden_columns($this->screen);
 
         $sortable_columns = $this->get_sortable_columns();
         /**
@@ -997,26 +1070,29 @@ class Twispay_Tw_List_Table {
          * The dynamic portion of the hook name, `$this->screen->id`, refers
          * to the ID of the current screen, usually a string.
          *
+         * @param array $sortable_columns An array of sortable columns.
+         *
          * @since 3.5.0
          *
-         * @param array $sortable_columns An array of sortable columns.
          */
-        $_sortable = apply_filters( "manage_{$this->screen->id}_sortable_columns", $sortable_columns );
+        $_sortable = apply_filters("manage_{$this->screen->id}_sortable_columns", $sortable_columns);
 
-        $sortable = array();
-        foreach ( $_sortable as $id => $data ) {
-            if ( empty( $data ) )
+        $sortable = [];
+        foreach ($_sortable as $id => $data) {
+            if (empty($data)) {
                 continue;
+            }
 
             $data = (array) $data;
-            if ( ! isset( $data[1] ) )
+            if (!isset($data[1])) {
                 $data[1] = false;
+            }
 
             $sortable[$id] = $data;
         }
 
         $primary = $this->get_primary_column_name();
-        $this->_column_headers = array( $columns, $hidden, $sortable, $primary );
+        $this->_column_headers = [$columns, $hidden, $sortable, $primary];
 
         return $this->_column_headers;
     }
@@ -1024,72 +1100,76 @@ class Twispay_Tw_List_Table {
     /**
      * Return number of visible columns
      *
-     * @since 3.1.0
+     * @return int
+     * @since  3.1.0
      * @access public
      *
-     * @return int
      */
-    public function get_column_count() {
-        list ( $columns, $hidden ) = $this->get_column_info();
-        $hidden = array_intersect( array_keys( $columns ), array_filter( $hidden ) );
-        return count( $columns ) - count( $hidden );
+    public function get_column_count()
+    {
+        [$columns, $hidden] = $this->get_column_info();
+        $hidden = array_intersect(array_keys($columns), array_filter($hidden));
+        return count($columns) - count($hidden);
     }
 
     /**
      * Print column headers, accounting for hidden and sortable columns.
      *
-     * @since 3.1.0
-     * @access public
+     * @param bool $with_id Whether to set the id attribute or not
+     *
+     * @since     3.1.0
+     * @access    public
      *
      * @staticvar int $cb_counter
      *
-     * @param bool $with_id Whether to set the id attribute or not
      */
-    public function print_column_headers( $with_id = true ) {
-        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+    public function print_column_headers($with_id = true)
+    {
+        [$columns, $hidden, $sortable, $primary] = $this->get_column_info();
 
-        $current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-        $current_url = remove_query_arg( 'paged', $current_url );
+        $current_url = set_url_scheme('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+        $current_url = remove_query_arg('paged', $current_url);
 
-        if ( isset( $_GET['orderby'] ) ) {
+        if (isset($_GET['orderby'])) {
             $current_orderby = $_GET['orderby'];
         } else {
             $current_orderby = '';
         }
 
-        if ( isset( $_GET['order'] ) && 'desc' === $_GET['order'] ) {
+        if (isset($_GET['order']) && 'desc' === $_GET['order']) {
             $current_order = 'desc';
         } else {
             $current_order = 'asc';
         }
 
-        if ( ! empty( $columns['cb'] ) ) {
+        if (!empty($columns['cb'])) {
             static $cb_counter = 1;
-            $columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All' ) . '</label>'
+            $columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __('Select All') . '</label>'
                 . '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />';
             $cb_counter++;
         }
 
-        foreach ( $columns as $column_key => $column_display_name ) {
-            $class = array( 'manage-column', "column-$column_key" );
+        foreach ($columns as $column_key => $column_display_name) {
+            $class = ['manage-column', "column-$column_key"];
 
-            if ( in_array( $column_key, $hidden ) ) {
+            if (in_array($column_key, $hidden)) {
                 $class[] = 'hidden';
             }
 
-            if ( 'cb' === $column_key )
+            if ('cb' === $column_key) {
                 $class[] = 'check-column';
-            elseif ( in_array( $column_key, array( 'posts', 'comments', 'links' ) ) )
+            } else if (in_array($column_key, ['posts', 'comments', 'links'])) {
                 $class[] = 'num';
+            }
 
-            if ( $column_key === $primary ) {
+            if ($column_key === $primary) {
                 $class[] = 'column-primary';
             }
 
-            if ( isset( $sortable[$column_key] ) ) {
-                list( $orderby, $desc_first ) = $sortable[$column_key];
+            if (isset($sortable[$column_key])) {
+                [$orderby, $desc_first] = $sortable[$column_key];
 
-                if ( $current_orderby === $orderby ) {
+                if ($current_orderby === $orderby) {
                     $order = 'asc' === $current_order ? 'desc' : 'asc';
                     $class[] = 'sorted';
                     $class[] = $current_order;
@@ -1099,15 +1179,16 @@ class Twispay_Tw_List_Table {
                     $class[] = $desc_first ? 'asc' : 'desc';
                 }
 
-                $column_display_name = '<a href="' . esc_url( add_query_arg( compact( 'orderby', 'order' ), $current_url ) ) . '"><span>' . $column_display_name . '</span><span class="sorting-indicator"></span></a>';
+                $column_display_name = '<a href="' . esc_url(add_query_arg(compact('orderby', 'order'), $current_url)) . '"><span>' . $column_display_name . '</span><span class="sorting-indicator"></span></a>';
             }
 
-            $tag = ( 'cb' === $column_key ) ? 'td' : 'th';
-            $scope = ( 'th' === $tag ) ? 'scope="col"' : '';
+            $tag = ('cb' === $column_key) ? 'td' : 'th';
+            $scope = ('th' === $tag) ? 'scope="col"' : '';
             $id = $with_id ? "id='$column_key'" : '';
 
-            if ( ! empty( $class ) )
-                $class = "class='" . join( ' ', $class ) . "'";
+            if (!empty($class)) {
+                $class = "class='" . join(' ', $class) . "'";
+            }
 
             echo "<$tag $scope $id $class>$column_display_name</$tag>";
         }
@@ -1116,72 +1197,76 @@ class Twispay_Tw_List_Table {
     /**
      * Display the table
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      */
-    public function display() {
+    public function display()
+    {
         $singular = $this->_args['singular'];
 
-        $this->display_tablenav( 'top' );
+        $this->display_tablenav('top');
 
-        $this->screen->render_screen_reader_content( 'heading_list' );
+        $this->screen->render_screen_reader_content('heading_list');
         ?>
-        <table class="wp-list-table <?php echo implode( ' ', $this->get_table_classes() ); ?>">
+        <table class="wp-list-table <?php echo implode(' ', $this->get_table_classes()); ?>">
             <thead>
             <tr>
                 <?php $this->print_column_headers(); ?>
             </tr>
             </thead>
             <tbody id="the-list"<?php
-                if ( $singular ) {
-                    echo " data-wp-lists='list:$singular'";
-                } ?>>
-                <?php $this->display_rows_or_placeholder(); ?>
+            if ($singular) {
+                echo " data-wp-lists='list:$singular'";
+            } ?>>
+            <?php $this->display_rows_or_placeholder(); ?>
             </tbody>
             <tfoot>
             <tr>
-                <?php $this->print_column_headers( false ); ?>
+                <?php $this->print_column_headers(false); ?>
             </tr>
             </tfoot>
         </table>
         <?php
-        $this->display_tablenav( 'bottom' );
+        $this->display_tablenav('bottom');
     }
 
     /**
      * Get a list of CSS classes for the WP_List_Table table tag.
      *
-     * @since 3.1.0
+     * @return array List of CSS classes for the table tag.
+     * @since  3.1.0
      * @access protected
      *
-     * @return array List of CSS classes for the table tag.
      */
-    protected function get_table_classes() {
-        return array( 'widefat', 'fixed', 'striped', $this->_args['plural'] );
+    protected function get_table_classes()
+    {
+        return ['widefat', 'fixed', 'striped', $this->_args['plural']];
     }
 
     /**
      * Generate the table navigation above or below the table
      *
-     * @since 3.1.0
-     * @access protected
      * @param string $which
+     *
+     * @since  3.1.0
+     * @access protected
      */
-    protected function display_tablenav( $which ) {
-        if ( 'top' === $which ) {
-            wp_nonce_field( 'bulk-' . $this->_args['plural'] );
+    protected function display_tablenav($which)
+    {
+        if ('top' === $which) {
+            wp_nonce_field('bulk-' . $this->_args['plural']);
         }
         ?>
-        <div class="tablenav <?php echo esc_attr( $which ); ?>">
-                <?php if ( $this->has_items() ): ?>
+        <div class="tablenav <?php echo esc_attr($which); ?>">
+            <?php if ($this->has_items()): ?>
                 <div class="alignleft actions bulkactions">
-                        <?php $this->bulk_actions( $which ); ?>
+                    <?php $this->bulk_actions($which); ?>
                 </div>
-                <?php endif;
-                $this->extra_tablenav( $which );
-                $this->pagination( $which );
-        ?>
-                <br class="clear" />
+            <?php endif;
+            $this->extra_tablenav($which);
+            $this->pagination($which);
+            ?>
+            <br class="clear"/>
         </div>
         <?php
     }
@@ -1189,21 +1274,25 @@ class Twispay_Tw_List_Table {
     /**
      * Extra controls to be displayed between bulk actions and pagination
      *
-     * @since 3.1.0
+     * @param string $which
+     *
+     * @since  3.1.0
      * @access protected
      *
-     * @param string $which
      */
-    protected function extra_tablenav( $which ) { }
+    protected function extra_tablenav($which)
+    {
+    }
 
     /**
      * Generate the tbody element for the list table.
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      */
-    public function display_rows_or_placeholder() {
-        if ( $this->has_items() ) {
+    public function display_rows_or_placeholder()
+    {
+        if ($this->has_items()) {
             $this->display_rows();
         } else {
             echo '<tr class="no-items"><td class="colspanchange" colspan="' . $this->get_column_count() . '">';
@@ -1215,25 +1304,29 @@ class Twispay_Tw_List_Table {
     /**
      * Generate the table rows
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      */
-    public function display_rows() {
-        foreach ( $this->items as $item )
-            $this->single_row( $item );
+    public function display_rows()
+    {
+        foreach ($this->items as $item) {
+            $this->single_row($item);
+        }
     }
 
     /**
      * Generates content for a single row of the table
      *
-     * @since 3.1.0
+     * @param object $item The current item
+     *
+     * @since  3.1.0
      * @access public
      *
-     * @param object $item The current item
      */
-    public function single_row( $item ) {
+    public function single_row($item)
+    {
         echo '<tr>';
-        $this->single_row_columns( $item );
+        $this->single_row_columns($item);
         echo '</tr>';
     }
 
@@ -1242,62 +1335,68 @@ class Twispay_Tw_List_Table {
      * @param object $item
      * @param string $column_name
      */
-    protected function column_default( $item, $column_name ) { }
+    protected function column_default($item, $column_name)
+    {
+    }
 
     /**
      *
      * @param object $item
      */
-    protected function column_cb( $item ) { }
+    protected function column_cb($item)
+    {
+    }
 
     /**
      * Generates the columns for a single row of the table
      *
-     * @since 3.1.0
+     * @param object $item The current item
+     *
+     * @since  3.1.0
      * @access protected
      *
-     * @param object $item The current item
      */
-    protected function single_row_columns( $item ) {
-        list( $columns, $hidden, $sortable, $primary ) = $this->get_column_info();
+    protected function single_row_columns($item)
+    {
+        [$columns, $hidden, $sortable, $primary] = $this->get_column_info();
 
-        foreach ( $columns as $column_name => $column_display_name ) {
+        foreach ($columns as $column_name => $column_display_name) {
             $classes = "$column_name column-$column_name";
-            if ( $primary === $column_name ) {
+            if ($primary === $column_name) {
                 $classes .= ' has-row-actions column-primary';
             }
 
-            if ( in_array( $column_name, $hidden ) ) {
+            if (in_array($column_name, $hidden)) {
                 $classes .= ' hidden';
             }
 
             // Comments column uses HTML in the display name with screen reader text.
             // Instead of using esc_attr(), we strip tags to get closer to a user-friendly string.
-            $data = 'data-colname="' . wp_strip_all_tags( $column_display_name ) . '"';
+            $data = 'data-colname="' . wp_strip_all_tags($column_display_name) . '"';
 
             $attributes = "class='$classes' $data";
 
-            if ( 'cb' === $column_name ) {
+            if ('cb' === $column_name) {
                 echo '<th scope="row" class="check-column">';
-                echo $this->column_cb( $item );
+                echo $this->column_cb($item);
                 echo '</th>';
-            } elseif ( method_exists( $this, '_column_' . $column_name ) ) {
+            } else if (method_exists($this, '_column_' . $column_name)) {
                 echo call_user_func(
-                    array( $this, '_column_' . $column_name ),
+                    [$this, '_column_' . $column_name],
                     $item,
                     $classes,
                     $data,
                     $primary
                 );
-            } elseif ( method_exists( $this, 'column_' . $column_name ) ) {
+            } else if (method_exists($this, 'column_' . $column_name)) {
                 echo "<td $attributes>";
-                echo call_user_func( array( $this, 'column_' . $column_name ), $item );
-                echo $this->handle_row_actions( $item, $column_name, $primary );
+                echo call_user_func([$this, 'column_' . $column_name], $item);
+                echo $this->handle_row_actions($item, $column_name, $primary);
                 echo "</td>";
             } else {
                 echo "<td $attributes>";
-                echo $this->column_default( $item, $column_name );
-                echo $this->handle_row_actions( $item, $column_name, $primary );
+                echo $this->column_default($item, $column_name);
+                echo $this->handle_row_actions($item, $column_name, $primary);
                 echo "</td>";
             }
         }
@@ -1306,29 +1405,32 @@ class Twispay_Tw_List_Table {
     /**
      * Generates and display row actions links for the list table.
      *
-     * @since 4.3.0
-     * @access protected
-     *
      * @param object $item        The item being acted upon.
      * @param string $column_name Current column name.
      * @param string $primary     Primary column name.
+     *
      * @return string The row actions HTML, or an empty string if the current column is the primary column.
+     * @since  4.3.0
+     * @access protected
+     *
      */
-    protected function handle_row_actions( $item, $column_name, $primary ) {
-        return $column_name === $primary ? '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __( 'Show more details' ) . '</span></button>' : '';
+    protected function handle_row_actions($item, $column_name, $primary)
+    {
+        return $column_name === $primary ? '<button type="button" class="toggle-row"><span class="screen-reader-text">' . __('Show more details') . '</span></button>' : '';
     }
 
     /**
      * Handle an incoming ajax request (called from admin-ajax.php)
      *
-     * @since 3.1.0
+     * @since  3.1.0
      * @access public
      */
-    public function ajax_response() {
+    public function ajax_response()
+    {
         $this->prepare_items();
 
         ob_start();
-        if ( ! empty( $_REQUEST['no_placeholder'] ) ) {
+        if (!empty($_REQUEST['no_placeholder'])) {
             $this->display_rows();
         } else {
             $this->display_rows_or_placeholder();
@@ -1336,20 +1438,20 @@ class Twispay_Tw_List_Table {
 
         $rows = ob_get_clean();
 
-        $response = array( 'rows' => $rows );
+        $response = ['rows' => $rows];
 
-        if ( isset( $this->_pagination_args['total_items'] ) ) {
+        if (isset($this->_pagination_args['total_items'])) {
             $response['total_items_i18n'] = sprintf(
-                _n( '%s item', '%s items', $this->_pagination_args['total_items'] ),
-                number_format_i18n( $this->_pagination_args['total_items'] )
+                _n('%s item', '%s items', $this->_pagination_args['total_items']),
+                number_format_i18n($this->_pagination_args['total_items'])
             );
         }
-        if ( isset( $this->_pagination_args['total_pages'] ) ) {
+        if (isset($this->_pagination_args['total_pages'])) {
             $response['total_pages'] = $this->_pagination_args['total_pages'];
-            $response['total_pages_i18n'] = number_format_i18n( $this->_pagination_args['total_pages'] );
+            $response['total_pages_i18n'] = number_format_i18n($this->_pagination_args['total_pages']);
         }
 
-        die( wp_json_encode( $response ) );
+        die(wp_json_encode($response));
     }
 
     /**
@@ -1357,15 +1459,16 @@ class Twispay_Tw_List_Table {
      *
      * @access public
      */
-    public function _js_vars() {
-        $args = array(
-            'class'  => get_class( $this ),
-            'screen' => array(
-                'id'   => $this->screen->id,
+    public function _js_vars()
+    {
+        $args = [
+            'class' => get_class($this),
+            'screen' => [
+                'id' => $this->screen->id,
                 'base' => $this->screen->base,
-            )
-        );
+            ],
+        ];
 
-        printf( "<script type='text/javascript'>list_args = %s;</script>\n", wp_json_encode( $args ) );
+        printf("<script type='text/javascript'>list_args = %s;</script>\n", wp_json_encode($args));
     }
 }
